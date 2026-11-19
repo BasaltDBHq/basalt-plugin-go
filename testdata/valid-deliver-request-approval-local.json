@@ -1,0 +1,22 @@
+{
+  "agent": "product_a",
+  "event": {
+    "specversion": "1.0",
+    "id": "0193a1b4-0000-7000-8000-000000000001",
+    "source": "urn:uuid:0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
+    "type": "dev.basaltdb.approval.requested",
+    "time": "2026-11-19T06:03:02.130000Z",
+    "subject": "product_a",
+    "datacontenttype": "application/json",
+    "data": {
+      "kind": "APPROVAL_REQUESTED",
+      "agent": "product_a",
+      "approvalId": "0193a1b3-1111-7000-8000-000000000001",
+      "headline": "Update 27 rows in public·leads",
+      "expiresAt": "2026-11-20T06:03:02.120000Z",
+      "link": "http://localhost:8787/approvals/0193a1b3-1111-7000-8000-000000000001#s=q3Jv8sLk2mT0xYp1aBcD9w",
+      "linkOpens": "ENGINE_COMPUTER",
+      "instruction": "Open the link on the computer Basalt runs on to review the held write and approve it with your passkey."
+    }
+  }
+}

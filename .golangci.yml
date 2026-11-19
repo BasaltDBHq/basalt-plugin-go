@@ -1,0 +1,299 @@
+version: "2"
+
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/BasaltDBHq/basalt-plugin-go
+
+linters:
+  default: standard
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - bodyclose
+    - contextcheck
+    - copyloopvar
+    - dogsled
+    - dupl
+    - durationcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - gocheckcompilerdirectives
+    - goconst
+    - gocritic
+    - gocyclo
+    - goprintffuncname
+    - gosec
+    - grouper
+    - importas
+    - loggercheck
+    - makezero
+    - mirror
+    - mnd
+    - misspell
+    - nilerr
+    - nilnil
+    - nolintlint
+    - nosprintfhostport
+    - prealloc
+    - predeclared
+    - reassign
+    - revive
+    - rowserrcheck
+    - sloglint
+    - sqlclosecheck
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - wastedassign
+    - whitespace
+  exclusions:
+    warn-unused: true
+    paths:
+      - bin
+    rules:
+      - path: _test\.go
+        linters:
+          - dupl
+          - gosec
+          - goconst
+          - wrapcheck
+          - err113
+          - revive
+          - testifylint
+          - errcheck
+
+      - path: cmd/
+        linters:
+          - gochecknoinits
+          - wrapcheck
+          - revive
+          - errcheck
+          - goconst
+          - gosec
+          - errchkjson
+          - gocritic
+
+      - text: "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*print(f|ln)?|os\\.(Un)?Setenv). is not checked"
+        linters:
+          - errcheck
+
+      - text: "G104:"
+        linters:
+          - gosec
+
+  disable:
+    - gocyclo
+    - gochecknoglobals
+    - exhaustruct
+    - varnamelen
+    - nlreturn
+    - testpackage
+    - paralleltest
+    - funlen
+    - cyclop
+    - forbidigo
+    - godox
+    - nonamedreturns
+    - testifylint
+    - thelper
+    - wrapcheck
+    - godot
+    - err113
+    - noctx
+    - ireturn
+    - nakedret
+    - perfsprint
+    - gochecknoinits
+    - gocognit
+
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: false
+      exclude-functions:
+        - io/ioutil.ReadFile
+        - io.Copy(*bytes.Buffer)
+        - io.Copy(os.Stdout)
+
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+        - shadow
+
+    gocyclo:
+      min-complexity: 15
+
+    dupl:
+      threshold: 100
+
+    goconst:
+      min-len: 3
+      min-occurrences: 3
+      ignore-tests: true
+
+    misspell:
+      locale: US
+      ignore-rules:
+        - cancelled
+
+    mnd:
+      # go-mnd defaults already ignore 0, 1, 0.0, 1.0, _test.go, and strconv/time formatters.
+      checks:
+        - argument
+        - assign
+        - case
+        - condition
+        - operation
+        - return
+      ignored-numbers:
+        - "2"
+      ignored-functions:
+        - "math.*"
+        - "sort.*"
+        - "bytes.*"
+        - "strings.*"
+        - "fmt.*"
+        - "rand.*"
+        - "regexp.*"
+        - "strconv.*"
+        - "time.*"
+        - "make"
+        - "http.StatusText"
+        - "json.Encoder.SetEscapeHTML"
+
+    nakedret:
+      max-func-lines: 0
+
+    prealloc:
+      simple: true
+      range-loops: true
+      for-loops: true
+
+    nolintlint:
+      allow-unused: false
+      require-explanation: true
+      require-specific: true
+
+    revive:
+      enable-all-rules: false
+      rules:
+        - name: context-as-argument
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: increment-decrement
+        - name: var-naming
+          arguments:
+            - ["ID", "URL", "HTTP", "JSON", "API", "DB", "SQL"]
+        - name: range
+        - name: receiver-naming
+        - name: indent-error-flow
+        - name: errorf
+        - name: empty-block
+        - name: superfluous-else
+        - name: unreachable-code
+        - name: redefines-builtin-id
+        - name: if-return
+        - name: early-return
+
+    gocritic:
+      enabled-tags:
+        - diagnostic
+        - performance
+      disabled-checks:
+        - hugeParam
+        - rangeValCopy
+        - exitAfterDefer
+        - commentFormatting
+        - sloppyReassign
+
+    gosec:
+      excludes:
+        - G404
+        - G304
+        - G111
+        - G115
+        - G301
+        - G302
+        - G402
+        - G703
+        - G704
+        - G204
+        - G202
+
+    errorlint:
+      errorf: true
+      asserts: true
+      comparison: true
+
+    exhaustive:
+      check:
+        - switch
+        - mapliteral
+      default-signifies-exhaustive: true
+
+
+
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+output:
+  formats:
+    text:
+      path: stdout
+      colors: true
+  sort-order:
+    - linter
+    - severity
+    - file
+  show-stats: true
+
+run:
+  timeout: 5m
+  relative-path-mode: gomod
+  issues-exit-code: 1
+  tests: true
+  build-tags:
+    - integration
+  modules-download-mode: readonly
+  allow-parallel-runners: false
+  go: "1.26"
+  concurrency: 4
+
+severity:
+  default: error
+  rules:
+    - linters:
+        - errcheck
+        - gosec
+        - govet
+        - staticcheck
+      severity: error
+
+    - linters:
+        - dupl
+        - goconst
+        - mnd
+        - misspell
+      severity: warning
+
+    - linters:
+        - godot
+        - whitespace
+      severity: info

@@ -1,0 +1,104 @@
+// The ConnectRPC mapping of the Basalt plugin protocol's messages. The
+// protocol is defined by the engine's contract and its JSON schemas (the
+// "// <file> #/<pointer>" line above each message names the schema object it
+// maps). Each message has the same fields as its schema, in snake_case; the
+// proto3 JSON names are the schema's camelCase names. Integer fields are
+// 32-bit, so proto3 JSON writes them as numbers, not strings. Each hook's
+// messages are added to this package by that hook's contract.
+syntax = "proto3";
+
+package basalt.plugin.v1;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/BasaltDBHq/basalt-plugin-go/proto/basalt/plugin/v1;pluginv1";
+
+service PluginService {
+  rpc Initialize(InitializeRequest) returns (InitializeResponse);
+  rpc Health(HealthRequest) returns (HealthResponse);
+  rpc Shutdown(ShutdownRequest) returns (ShutdownResponse);
+  // feed.observe (feed/1).
+  rpc FeedObserve(FeedObserveRequest) returns (FeedObserveResponse);
+  // Planned: approval.deliver (deliver/1).
+  rpc ApprovalDeliver(ApprovalDeliverRequest) returns (ApprovalDeliverResponse);
+}
+
+// initialize.schema.json #/$defs/request
+message InitializeRequest {
+  repeated string protocols = 1;
+  repeated string hooks = 2;
+  google.protobuf.Struct config = 3;
+  Limits limits = 4;
+}
+
+// initialize.schema.json #/$defs/limits
+message Limits {
+  int32 max_message_bytes = 1;
+  int32 max_in_flight = 2;
+  int32 timeout_ms = 3;
+}
+
+// initialize.schema.json #/$defs/response
+message InitializeResponse {
+  string protocol = 1;
+  string name = 2;
+  string version = 3;
+  // Keyed by hook name (wire.detect), as in the manifest.
+  map<string, HookDeclaration> hooks = 4;
+  Model model = 5;
+}
+
+// manifest.schema.json #/$defs/hookDeclaration
+message HookDeclaration {
+  string contract = 1;
+  repeated string roles = 2;
+  repeated string entity_types = 3;
+}
+
+// initialize.schema.json #/$defs/model
+message Model {
+  string name = 1;
+  string version = 2;
+}
+
+// health.schema.json #/$defs/request
+message HealthRequest {}
+
+// health.schema.json #/$defs/response
+message HealthResponse {
+  // READY or NOT_READY.
+  string status = 1;
+}
+
+// shutdown.schema.json #/$defs/request
+message ShutdownRequest {}
+
+// shutdown.schema.json #/$defs/response
+message ShutdownResponse {}
+
+// feed.schema.json #/$defs/request
+message FeedObserveRequest {
+  string agent = 1;
+  // The CloudEvents JSON batch, application/cloudevents-batch+json: the
+  // exact bytes JSON-RPC carries as events. Events stay in their JSON form
+  // on every transport.
+  bytes events = 2;
+}
+
+// feed.schema.json #/$defs/response
+message FeedObserveResponse {
+  // A ledger seq is a bigint, so this field is 64-bit; the engine calls
+  // with binary protobuf, where that needs no string form.
+  int64 last_seq = 1;
+}
+
+// deliver.schema.json #/$defs/request
+message ApprovalDeliverRequest {
+  string agent = 1;
+  // One CloudEvent, application/cloudevents+json: the exact bytes JSON-RPC
+  // carries as event.
+  bytes event = 2;
+}
+
+// deliver.schema.json #/$defs/response
+message ApprovalDeliverResponse {}

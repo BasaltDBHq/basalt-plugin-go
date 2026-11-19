@@ -1,0 +1,19 @@
+{
+  "protocols": [
+    "basalt-plugin/1"
+  ],
+  "hooks": [
+    "wire.detect"
+  ],
+  "config": {
+    "languages": [
+      "en",
+      "id"
+    ]
+  },
+  "limits": {
+    "maxMessageBytes": 4194304,
+    "maxInFlight": 4,
+    "timeoutMs": 300
+  }
+}

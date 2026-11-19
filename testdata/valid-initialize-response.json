@@ -1,0 +1,23 @@
+{
+  "protocol": "basalt-plugin/1",
+  "name": "acme-ner",
+  "version": "1.4.0",
+  "hooks": {
+    "wire.detect": {
+      "contract": "detector/1",
+      "roles": [
+        "VALUE",
+        "NAME_CUE"
+      ],
+      "entityTypes": [
+        "PERSON_NAME",
+        "ADDRESS",
+        "acme-ner.EMPLOYEE_ID"
+      ]
+    }
+  },
+  "model": {
+    "name": "acme-ner",
+    "version": "2026.11.13"
+  }
+}
