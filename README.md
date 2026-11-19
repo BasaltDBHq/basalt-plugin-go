@@ -184,7 +184,11 @@ A plugin on another host serves ConnectRPC over TLS on a listener you supply, wi
 | `.../protocol` | The protocol's JSON message types and limits, for code that speaks the protocol itself. |
 | `.../proto/basalt/plugin/v1` and `.../pluginv1connect` | The generated ConnectRPC service, `basalt.plugin.v1.PluginService`, and its `.proto` file. |
 
-The event type names (`dev.basaltdb.*`) and the protocol version (`basalt-plugin/1`) are the engine's and do not change with this module's version.
+## Protocol and versions
+
+The engine defines the plugin protocol: its contract, its JSON schemas and the service definition. This module holds copies of what it needs: the `.proto` file under `proto/` (it differs from the engine's only in its header comment and `go_package`), the message types in `protocol/`, and the contract's samples under `testdata/`. They were taken from BasaltDB commit `d2fd2b9c340e`, which is not yet in a tagged engine release.
+
+This module's major version follows the protocol's. Every `v0` and `v1` release speaks `basalt-plugin/1`; a new protocol major version means a new module major version. The event type names (`dev.basaltdb.*`) are the engine's and do not change with this module's version.
 
 ## Develop
 
