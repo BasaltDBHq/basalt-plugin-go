@@ -1,0 +1,198 @@
+# basalt-plugin-go
+
+The Go SDK for [BasaltDB](https://github.com/BasaltDBHq/BasaltDB) plugins.
+
+BasaltDB sits between an AI agent and a database. A plugin is a separate program the engine starts and calls. You write what the plugin does; the SDK speaks the protocol: the handshake, health checks, shutdown, message size limits, deadlines and the three transports.
+
+The first kind of plugin is a **notifier**. It tells a person what an agent did, in the channel they already use: a chat room, a pager, a webhook, a message queue.
+
+Full documentation: <https://docs.basaltvault.app>
+
+> This module has no tagged release yet. The API can still change before `v1.0.0`.
+
+## Install
+
+You need Go 1.26 or later.
+
+```sh
+go get github.com/BasaltDBHq/basalt-plugin-go
+```
+
+The package name is `basaltplugin`, so import it by that name:
+
+```go
+import basaltplugin "github.com/BasaltDBHq/basalt-plugin-go"
+```
+
+## A complete notifier
+
+This is the whole program. It is also in [`examples/notifier`](examples/notifier/main.go).
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	basaltplugin "github.com/BasaltDBHq/basalt-plugin-go"
+)
+
+type notifier struct{}
+
+func (notifier) Info() basaltplugin.Info {
+	return basaltplugin.Info{Name: "hello-notify", Version: "0.1.0"}
+}
+
+func (notifier) ObserveFeed(_ context.Context, b basaltplugin.FeedBatch) (int64, error) {
+	for _, ev := range b.Events {
+		held, ok := ev.Detail.(basaltplugin.WriteHeld)
+		if !ok || ev.IsCheckSample() {
+			continue
+		}
+		if _, err := fmt.Fprintf(os.Stderr, "%s: %d rows wait for approval\n", b.Agent, held.Rows); err != nil {
+			return 0, err // the engine sends this batch again later
+		}
+	}
+	return b.LastSeq(), nil
+}
+
+func (notifier) DeliverApproval(_ context.Context, n basaltplugin.Notice) error {
+	if n.IsCheckSample() {
+		return nil
+	}
+	_, err := fmt.Fprintln(os.Stderr, n.Headline, n.Instruction, n.Link)
+	return err
+}
+
+func main() {
+	if err := basaltplugin.Serve(context.Background(), notifier{}); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+```
+
+What it does:
+
+- `Info` names the plugin. The name and version must equal the manifest's.
+- `ObserveFeed` gets one agent's events, in order: writes applied, refused or held, approvals signed, reverts. They hold metadata only, never a row value or a statement. Return the `Seq` of the last event you handled; `b.LastSeq()` means all of them. Return an error and the engine sends the same events again later.
+- `DeliverApproval` gets a notice that something waits for the person: a held write, a prepared revert, or a replaced link.
+- `Serve` runs until the engine stops the plugin.
+
+The SDK declares a hook for each of the two interfaces the plugin implements. Implement only one and it declares only that one.
+
+Write nothing to stdout. On the default transport, stdout carries the protocol. Use stderr for your own output.
+
+## Check it with `basalt plugin check`
+
+`basalt plugin check` starts your plugin the way the engine does, runs the handshake and a health check, sends each hook a fixed sample, and stops it. It needs no database.
+
+Install the engine first (`brew install basaltdbhq/tap/basaltdb`, or see the [engine's README](https://github.com/BasaltDBHq/BasaltDB#readme)). The steps below are for an engine in same-user mode: its `engine.json` has `"mode": "SAME_USER"` and lists the agent you pass to `--agents`. `trust`, `add` and `enable` each ask you to confirm.
+
+1. Build the plugin into a directory of its own:
+
+   ```sh
+   go build -o hello-notify/bin/hello-notify .
+   ```
+
+2. Write `hello-notify/basalt-plugin.json`. The `files` entry holds the SHA-256 of the binary (`shasum -a 256 hello-notify/bin/hello-notify`). The name, the version and the hooks must equal what the plugin says about itself, or the engine refuses it.
+
+   ```json
+   {
+     "manifestVersion": 1, "name": "hello-notify", "version": "0.1.0", "publisher": "You",
+     "protocol": ["basalt-plugin/1"],
+     "hooks": {
+       "feed.observe": { "contract": "feed/1" },
+       "approval.deliver": { "contract": "deliver/1" }
+     },
+     "endpoint": { "local": { "transport": "jsonrpc-stdio", "command": "bin/hello-notify" } },
+     "files": { "bin/hello-notify": "sha256:<hash of the binary>" },
+     "network": { "egress": [] }
+   }
+   ```
+
+3. Make a signing key and sign the plugin:
+
+   ```sh
+   basalt plugin keygen --out keys
+   basalt plugin sign hello-notify --key keys/<key id>.key
+   ```
+
+4. Trust your key on your own engine:
+
+   ```sh
+   basalt plugin trust keys/<key id>.pub
+   ```
+
+5. Install the plugin for the agents it should serve, and turn it on:
+
+   ```sh
+   basalt plugin add hello-notify --agents product_a
+   basalt plugin enable hello-notify
+   ```
+
+6. Check it:
+
+   ```sh
+   basalt plugin check hello-notify
+   ```
+
+   It prints one line for the handshake and one per hook:
+
+   ```
+   plugin hello-notify/default: initialize 3ms, health READY 1ms
+   plugin hello-notify/default: approval.deliver 1ms
+   plugin hello-notify/default: feed.observe lastSeq 2 1ms
+   ```
+
+The samples `check` sends answer `true` to `IsCheckSample()`. Answer them like any other event, but do not post them to a person.
+
+## Start from the template
+
+[`template/main.go`](template/main.go) is a feed observer with a `-transport` flag and the manifest it needs in its comment. Copy the file into your own module, change the name and version, and make `ObserveFeed` do what your plugin does.
+
+## What to know before you ship
+
+- **Events arrive at least once.** After a crash, a restart or a failed call the engine sends them again. Two events with the same `Source` and `ID` are the same event: dedup by that pair.
+- **Skip what you do not know.** A later engine may send an event type this SDK does not know (`Detail` is nil, `Seq` is set) or a notice of an unknown `Kind`. Skip it and still count it as handled.
+- **Forward events unchanged.** Every event is a CloudEvents 1.0 event. `Raw()` returns its exact JSON bytes; send those to a broker or a webhook, not a re-encoding.
+- **Escape text for your channel.** Headlines, table names and agent names are plain text. An agent names its own tables, so escape your chat's markup (mentions, links, emphasis) before you post.
+- **A notice's link can hold the request.** A long link carries the statement, its parameters and the affected rows. Anyone who can read where you deliver the notice can read them. The link grants no power: approving still needs the person's passkey.
+- **Errors stay in the plugin.** The SDK never sends a handler's error text to the engine, because it may hold a value. Write reasons to stderr.
+
+The [package documentation](https://pkg.go.dev/github.com/BasaltDBHq/basalt-plugin-go) covers each of these, the optional `Initializer`, `HealthChecker` and `Shutdowner` interfaces, and remote plugins over TLS.
+
+## Transports
+
+You write no transport code. The manifest's `endpoint.local.transport` says how the engine reaches the plugin, and `Serve` follows.
+
+| Manifest transport | What to do |
+| --- | --- |
+| `jsonrpc-stdio` | Nothing. It is the default. |
+| `jsonrpc-unix` | Nothing. The engine sets `BASALT_PLUGIN_SOCKET` and `Serve` listens on it. |
+| `connectrpc` | Pass `basaltplugin.WithTransport(basaltplugin.ConnectRPC)`. A plain gRPC client works too. |
+
+A plugin on another host serves ConnectRPC over TLS on a listener you supply, with `WithListener` and `WithBearerToken`.
+
+## Packages
+
+| Import path | What it is |
+| --- | --- |
+| `github.com/BasaltDBHq/basalt-plugin-go` | Package `basaltplugin`: the SDK. Most plugins need only this. |
+| `.../protocol` | The protocol's JSON message types and limits, for code that speaks the protocol itself. |
+| `.../proto/basalt/plugin/v1` and `.../pluginv1connect` | The generated ConnectRPC service, `basalt.plugin.v1.PluginService`, and its `.proto` file. |
+
+The event type names (`dev.basaltdb.*`) and the protocol version (`basalt-plugin/1`) are the engine's and do not change with this module's version.
+
+## Develop
+
+```sh
+make ci      # vet, lint and the tests with the race detector
+make proto   # regenerate the Go code from the .proto file (needs protoc)
+```
+
+## License
+
+Apache-2.0. See [LICENSE](LICENSE).
