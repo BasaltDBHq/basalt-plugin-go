@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/BasaltDBHq/basalt-plugin-go/protocol"
+	"github.com/basaltdbhq/basalt-plugin-go/protocol"
 )
 
 // SocketEnv is the one environment variable a local socket plugin is started
@@ -95,23 +95,23 @@ type Shutdowner interface {
 // Errors Serve returns.
 var (
 	// ErrBadPlugin: the plugin's Info has no name or no version.
-	ErrBadPlugin = errors.New("sdk: the plugin needs a name and a version")
+	ErrBadPlugin = errors.New("basaltplugin: the plugin needs a name and a version")
 	// ErrNoSocket: a socket transport was chosen and SocketEnv is not set.
-	ErrNoSocket = errors.New("sdk: " + SocketEnv + " is not set to an absolute socket path")
+	ErrNoSocket = errors.New("basaltplugin: " + SocketEnv + " is not set to an absolute socket path")
 	// ErrTLSRequired: a ConnectRPC listener that is not a Unix socket was
 	// given without a TLS configuration. The engine always uses TLS for a
 	// remote plugin.
-	ErrTLSRequired = errors.New("sdk: a listener that is not a unix socket needs a TLS configuration")
+	ErrTLSRequired = errors.New("basaltplugin: a listener that is not a unix socket needs a TLS configuration")
 	// ErrMessageTooLarge: the engine sent a message over MaxMessageBytes on
 	// the stdio transport. The stream cannot be resynchronised, so Serve ends.
-	ErrMessageTooLarge = errors.New("sdk: a message was over the size cap")
+	ErrMessageTooLarge = errors.New("basaltplugin: a message was over the size cap")
 	// ErrHookNotImplemented: WithHooks declares a hook the SDK has an
 	// interface for (FeedObserver, ApprovalDeliverer), and the plugin does
 	// not implement it. The engine would call the hook and get "method not
 	// found" every time. Implement the interface; the SDK then declares the
 	// hook itself.
-	ErrHookNotImplemented = errors.New("sdk: WithHooks declares a hook whose interface the plugin does not implement")
+	ErrHookNotImplemented = errors.New("basaltplugin: WithHooks declares a hook whose interface the plugin does not implement")
 	// ErrTransport: the options name a transport that cannot be served as
 	// asked.
-	ErrTransport = errors.New("sdk: the transport options do not fit together")
+	ErrTransport = errors.New("basaltplugin: the transport options do not fit together")
 )

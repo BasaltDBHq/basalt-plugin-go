@@ -6,7 +6,7 @@ import (
 	"errors"
 	"slices"
 
-	"github.com/BasaltDBHq/basalt-plugin-go/protocol"
+	"github.com/basaltdbhq/basalt-plugin-go/protocol"
 )
 
 // FeedObserver is implemented by a plugin that observes the feed
@@ -143,7 +143,7 @@ func deliverApproval(h ApprovalDeliverer) methodFunc {
 
 // errPanicked stands for a handler that panicked. Its value stays in the
 // plugin, like a handler's error.
-var errPanicked = errors.New("sdk: the handler panicked")
+var errPanicked = errors.New("basaltplugin: the handler panicked")
 
 // recovered runs a hook handler and turns a panic into an error, so one bad
 // event fails its call instead of ending the plugin.

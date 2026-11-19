@@ -16,9 +16,9 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
-	pluginv1 "github.com/BasaltDBHq/basalt-plugin-go/proto/basalt/plugin/v1"
-	"github.com/BasaltDBHq/basalt-plugin-go/proto/basalt/plugin/v1/pluginv1connect"
-	"github.com/BasaltDBHq/basalt-plugin-go/protocol"
+	pluginv1 "github.com/basaltdbhq/basalt-plugin-go/proto/basalt/plugin/v1"
+	"github.com/basaltdbhq/basalt-plugin-go/proto/basalt/plugin/v1/pluginv1connect"
+	"github.com/basaltdbhq/basalt-plugin-go/protocol"
 )
 
 // wire is the engine's side of one socket connection to a plugin, as far as

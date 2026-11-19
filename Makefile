@@ -1,4 +1,4 @@
-MODULE := github.com/BasaltDBHq/basalt-plugin-go
+MODULE := github.com/basaltdbhq/basalt-plugin-go
 GOLANGCI_VERSION := v2.15.0
 BIN := $(CURDIR)/bin
 export PATH := $(BIN):$(PATH)

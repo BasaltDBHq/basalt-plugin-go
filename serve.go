@@ -115,7 +115,7 @@ func listenUnix(c *config) (net.Listener, error) {
 	}
 	l, err := net.Listen("unix", path)
 	if err != nil {
-		return nil, errors.New("sdk: cannot listen on the plugin socket")
+		return nil, errors.New("basaltplugin: cannot listen on the plugin socket")
 	}
 	return l, nil
 }

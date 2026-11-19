@@ -15,7 +15,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/BasaltDBHq/basalt-plugin-go/protocol"
+	"github.com/basaltdbhq/basalt-plugin-go/protocol"
 )
 
 const marker = "SECRET-PLUGIN-VALUE"

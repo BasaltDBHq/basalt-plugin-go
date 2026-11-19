@@ -8,20 +8,22 @@ The first kind of plugin is a **notifier**. It tells a person what an agent did,
 
 Full documentation: <https://docs.basaltvault.app>
 
-> This module has no tagged release yet. The API can still change before `v1.0.0`.
+> The first release is `v0.1.0-alpha`. The API can still change before `v1.0.0`.
 
 ## Install
 
 You need Go 1.26 or later.
 
 ```sh
-go get github.com/BasaltDBHq/basalt-plugin-go
+go get github.com/basaltdbhq/basalt-plugin-go@v0.1.0-alpha
 ```
+
+The module path is all lower case.
 
 The package name is `basaltplugin`, so import it by that name:
 
 ```go
-import basaltplugin "github.com/BasaltDBHq/basalt-plugin-go"
+import basaltplugin "github.com/basaltdbhq/basalt-plugin-go"
 ```
 
 ## A complete notifier
@@ -36,7 +38,7 @@ import (
 	"fmt"
 	"os"
 
-	basaltplugin "github.com/BasaltDBHq/basalt-plugin-go"
+	basaltplugin "github.com/basaltdbhq/basalt-plugin-go"
 )
 
 type notifier struct{}
@@ -162,7 +164,7 @@ The samples `check` sends answer `true` to `IsCheckSample()`. Answer them like a
 - **A notice's link can hold the request.** A long link carries the statement, its parameters and the affected rows. Anyone who can read where you deliver the notice can read them. The link grants no power: approving still needs the person's passkey.
 - **Errors stay in the plugin.** The SDK never sends a handler's error text to the engine, because it may hold a value. Write reasons to stderr.
 
-The [package documentation](https://pkg.go.dev/github.com/BasaltDBHq/basalt-plugin-go) covers each of these, the optional `Initializer`, `HealthChecker` and `Shutdowner` interfaces, and remote plugins over TLS.
+The [package documentation](https://pkg.go.dev/github.com/basaltdbhq/basalt-plugin-go) covers each of these, the optional `Initializer`, `HealthChecker` and `Shutdowner` interfaces, and remote plugins over TLS.
 
 ## Transports
 
@@ -180,7 +182,7 @@ A plugin on another host serves ConnectRPC over TLS on a listener you supply, wi
 
 | Import path | What it is |
 | --- | --- |
-| `github.com/BasaltDBHq/basalt-plugin-go` | Package `basaltplugin`: the SDK. Most plugins need only this. |
+| `github.com/basaltdbhq/basalt-plugin-go` | Package `basaltplugin`: the SDK. Most plugins need only this. |
 | `.../protocol` | The protocol's JSON message types and limits, for code that speaks the protocol itself. |
 | `.../proto/basalt/plugin/v1` and `.../pluginv1connect` | The generated ConnectRPC service, `basalt.plugin.v1.PluginService`, and its `.proto` file. |
 

@@ -13,8 +13,8 @@ import (
 	connectrpc "connectrpc.com/connect"
 	"github.com/stretchr/testify/require"
 
-	pluginv1 "github.com/BasaltDBHq/basalt-plugin-go/proto/basalt/plugin/v1"
-	"github.com/BasaltDBHq/basalt-plugin-go/proto/basalt/plugin/v1/pluginv1connect"
+	pluginv1 "github.com/basaltdbhq/basalt-plugin-go/proto/basalt/plugin/v1"
+	"github.com/basaltdbhq/basalt-plugin-go/proto/basalt/plugin/v1/pluginv1connect"
 )
 
 // TestStuckHandlersEndAtTheDeadlineOverConnect: the same bound holds on the

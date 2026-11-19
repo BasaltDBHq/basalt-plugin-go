@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/BasaltDBHq/basalt-plugin-go/protocol"
+	"github.com/basaltdbhq/basalt-plugin-go/protocol"
 )
 
 const (
@@ -24,7 +24,7 @@ const (
 	closeWait = 500 * time.Millisecond
 )
 
-var errTooLong = errors.New("sdk: line over the size cap")
+var errTooLong = errors.New("basaltplugin: line over the size cap")
 
 type rpcRequest struct {
 	JSONRPC string          `json:"jsonrpc"`

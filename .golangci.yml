@@ -9,7 +9,7 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - github.com/BasaltDBHq/basalt-plugin-go
+        - github.com/basaltdbhq/basalt-plugin-go
 
 linters:
   default: standard

@@ -88,7 +88,7 @@ type envelope struct {
 	Data            json.RawMessage `json:"data"`
 }
 
-var errBadEvent = errors.New("sdk: an event that is not a CloudEvent with a data object")
+var errBadEvent = errors.New("basaltplugin: an event that is not a CloudEvent with a data object")
 
 func decodeCloudEvent(raw json.RawMessage) (CloudEvent, error) {
 	var e envelope

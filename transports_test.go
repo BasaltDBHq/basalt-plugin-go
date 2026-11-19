@@ -24,9 +24,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/structpb"
 
-	pluginv1 "github.com/BasaltDBHq/basalt-plugin-go/proto/basalt/plugin/v1"
-	"github.com/BasaltDBHq/basalt-plugin-go/proto/basalt/plugin/v1/pluginv1connect"
-	"github.com/BasaltDBHq/basalt-plugin-go/protocol"
+	pluginv1 "github.com/basaltdbhq/basalt-plugin-go/proto/basalt/plugin/v1"
+	"github.com/basaltdbhq/basalt-plugin-go/proto/basalt/plugin/v1/pluginv1connect"
+	"github.com/basaltdbhq/basalt-plugin-go/protocol"
 )
 
 // detectHook is a declaration with every field set, so a field the SDK drops

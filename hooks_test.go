@@ -117,7 +117,7 @@ func mustField(t *testing.T, raw json.RawMessage, key string) string {
 // depend on this module and never the other way round.
 func TestImportsNothingOfTheEngine(t *testing.T) {
 	const engine = "github.com/basaltdbhq/basaltdb/"
-	const module = "github.com/BasaltDBHq/basalt-plugin-go"
+	const module = "github.com/basaltdbhq/basalt-plugin-go"
 	checked := 0
 	require.NoError(t, filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".go") {

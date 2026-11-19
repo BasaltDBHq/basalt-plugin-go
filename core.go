@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/BasaltDBHq/basalt-plugin-go/protocol"
+	"github.com/basaltdbhq/basalt-plugin-go/protocol"
 )
 
 // Deadlines. The engine sends the entry's timeoutMs in initialize; until then a

@@ -757,7 +757,7 @@ const file_basalt_plugin_v1_plugin_proto_rawDesc = "" +
 	"\x06Health\x12\x1f.basalt.plugin.v1.HealthRequest\x1a .basalt.plugin.v1.HealthResponse\x12Q\n" +
 	"\bShutdown\x12!.basalt.plugin.v1.ShutdownRequest\x1a\".basalt.plugin.v1.ShutdownResponse\x12Z\n" +
 	"\vFeedObserve\x12$.basalt.plugin.v1.FeedObserveRequest\x1a%.basalt.plugin.v1.FeedObserveResponse\x12f\n" +
-	"\x0fApprovalDeliver\x12(.basalt.plugin.v1.ApprovalDeliverRequest\x1a).basalt.plugin.v1.ApprovalDeliverResponseBHZFgithub.com/BasaltDBHq/basalt-plugin-go/proto/basalt/plugin/v1;pluginv1b\x06proto3"
+	"\x0fApprovalDeliver\x12(.basalt.plugin.v1.ApprovalDeliverRequest\x1a).basalt.plugin.v1.ApprovalDeliverResponseBHZFgithub.com/basaltdbhq/basalt-plugin-go/proto/basalt/plugin/v1;pluginv1b\x06proto3"
 
 var (
 	file_basalt_plugin_v1_plugin_proto_rawDescOnce sync.Once

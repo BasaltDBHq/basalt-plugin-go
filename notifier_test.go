@@ -19,7 +19,7 @@ import (
 	connectrpc "connectrpc.com/connect"
 	"github.com/stretchr/testify/require"
 
-	"github.com/BasaltDBHq/basalt-plugin-go/protocol"
+	"github.com/basaltdbhq/basalt-plugin-go/protocol"
 )
 
 const testdata = "testdata"

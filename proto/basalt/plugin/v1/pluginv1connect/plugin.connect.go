@@ -20,7 +20,7 @@ import (
 
 	connect "connectrpc.com/connect"
 
-	v1 "github.com/BasaltDBHq/basalt-plugin-go/proto/basalt/plugin/v1"
+	v1 "github.com/basaltdbhq/basalt-plugin-go/proto/basalt/plugin/v1"
 )
 
 // This is a compile-time assertion to ensure that this generated file and the connect package are

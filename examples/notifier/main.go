@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	basaltplugin "github.com/BasaltDBHq/basalt-plugin-go"
+	basaltplugin "github.com/basaltdbhq/basalt-plugin-go"
 )
 
 type notifier struct{}

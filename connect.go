@@ -13,9 +13,9 @@ import (
 	connectrpc "connectrpc.com/connect"
 	"google.golang.org/protobuf/encoding/protojson"
 
-	pluginv1 "github.com/BasaltDBHq/basalt-plugin-go/proto/basalt/plugin/v1"
-	"github.com/BasaltDBHq/basalt-plugin-go/proto/basalt/plugin/v1/pluginv1connect"
-	"github.com/BasaltDBHq/basalt-plugin-go/protocol"
+	pluginv1 "github.com/basaltdbhq/basalt-plugin-go/proto/basalt/plugin/v1"
+	"github.com/basaltdbhq/basalt-plugin-go/proto/basalt/plugin/v1/pluginv1connect"
+	"github.com/basaltdbhq/basalt-plugin-go/protocol"
 )
 
 const (

@@ -1,4 +1,4 @@
-module github.com/BasaltDBHq/basalt-plugin-go
+module github.com/basaltdbhq/basalt-plugin-go
 
 go 1.26.0
 

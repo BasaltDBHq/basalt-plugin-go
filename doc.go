@@ -24,7 +24,7 @@
 // A complete notifier (chat stands for your channel's client). The package's
 // name is basaltplugin, so import it by that name:
 //
-//	import basaltplugin "github.com/BasaltDBHq/basalt-plugin-go"
+//	import basaltplugin "github.com/basaltdbhq/basalt-plugin-go"
 //
 //	type notifier struct{ out *chat.Client }
 //
@@ -123,7 +123,7 @@
 // The template (directory template, package main) is a feed observer that
 // writes one line per event to stderr, with a transport flag and the manifest
 // it needs. Copy template/main.go into a module of your own that requires
-// this one (go get github.com/BasaltDBHq/basalt-plugin-go). The steps below
+// this one (go get github.com/basaltdbhq/basalt-plugin-go). The steps below
 // are for same-user mode: engine.json has "mode": "SAME_USER" and lists the
 // agent you pass to --agents, and trust, add and enable ask for a yes at the
 // prompt.
