@@ -11,7 +11,7 @@ import (
 // SocketEnv is the one environment variable a local socket plugin is started
 // with: the absolute path of the Unix socket it listens on. It is the engine's
 // documented socket handover, repeated here so the SDK imports nothing of the
-// engine; the engine's tests keep it equal to the engine's constant.
+// engine.
 const SocketEnv = "BASALT_PLUGIN_SOCKET"
 
 // Protocol is the protocol version this SDK speaks.
@@ -27,8 +27,7 @@ const (
 )
 
 // HookDecl is what a plugin declares for one hook: the same object as one
-// entry of the manifest's hooks. It is the protocol package's type, the one
-// the engine checks a declaration against.
+// entry of the manifest's hooks. It is the protocol package's type.
 type HookDecl = protocol.HookDecl
 
 // Model names the model behind a plugin, when it has one. The engine records

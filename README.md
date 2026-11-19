@@ -89,7 +89,7 @@ Write nothing to stdout. On the default transport, stdout carries the protocol. 
 
 `basalt plugin check` starts your plugin the way the engine does, runs the handshake and a health check, sends each hook a fixed sample, and stops it. It needs no database.
 
-Install the engine first (`brew install basaltdbhq/tap/basaltdb`, or see the [engine's README](https://github.com/BasaltDBHq/BasaltDB#readme)). The steps below are for an engine in same-user mode: its `engine.json` has `"mode": "SAME_USER"` and lists the agent you pass to `--agents`. `trust`, `add` and `enable` each ask you to confirm.
+You need a `basalt` binary that has the `basalt plugin` commands. Engine releases up to `v0.0.1-alpha.2` do not have them yet; until the next release, build the engine from source (see the [engine's README](https://github.com/BasaltDBHq/BasaltDB#readme)). The steps below are for an engine in same-user mode: its `engine.json` has `"mode": "SAME_USER"` and lists the agent you pass to `--agents`. `trust`, `add` and `enable` each ask you to confirm.
 
 1. Build the plugin into a directory of its own:
 

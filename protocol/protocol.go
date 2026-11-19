@@ -5,7 +5,8 @@
 // ignored on decode.
 //
 // Plugin authors use package basaltplugin, which speaks the protocol for
-// them. This package is for code that speaks it directly, as the engine does.
+// them. This package is for code that speaks it directly, such as a client
+// written to test a plugin.
 package protocol
 
 // Version1 is the only protocol version there is.
