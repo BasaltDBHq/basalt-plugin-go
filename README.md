@@ -195,9 +195,13 @@ This module's major version follows the protocol's. Every `v0` and `v1` release 
 ## Develop
 
 ```sh
-make ci      # vet, lint and the tests with the race detector
+make help    # every target
+make fmt     # gofumpt and goimports; commit what it changes
+make ci      # tidy check, vet, lint (golangci-lint pinned in ./bin) and the tests with the race detector
 make proto   # regenerate the Go code from the .proto file (needs protoc)
 ```
+
+Code rules for contributors and coding agents: [AGENTS.md](AGENTS.md).
 
 ## License
 
