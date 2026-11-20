@@ -79,10 +79,9 @@ func serveSocket(t *testing.T, p Plugin, opts ...Option) (*served, string) {
 	})
 	s := serveBackground(p, append([]Option{env}, opts...)...)
 	t.Cleanup(s.cancel)
-	require.Eventually(t, func() bool {
-		fi, err := os.Lstat(path)
-		return err == nil && fi.Mode().Type() == os.ModeSocket
-	}, wait, 5*time.Millisecond)
+	// The socket file appears at bind, before listen: dial, so a test never
+	// meets a socket that refuses its first connection.
+	waitSocket(t, path)
 	return s, path
 }
 

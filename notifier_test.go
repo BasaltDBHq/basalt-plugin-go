@@ -459,7 +459,8 @@ func TestConnectHookCallsHaveFourSlots(t *testing.T) {
 
 // TestConnectCallsPastTheWaitingCapAreAnsweredBusy: with four calls running
 // and eight waiting on one connection, the next is answered at once, without
-// waiting for its deadline.
+// waiting for its deadline. Thirteen calls go out together and none ends until
+// the test does, so exactly one is answered early, whichever arrives last.
 func TestConnectCallsPastTheWaitingCapAreAnsweredBusy(t *testing.T) {
 	var running atomic.Int32
 	release := make(chan struct{})
@@ -475,24 +476,27 @@ func TestConnectCallsPastTheWaitingCapAreAnsweredBusy(t *testing.T) {
 		Protocols: []string{protocol.Version1}, Limits: protocol.Limits{TimeoutMs: 10000},
 	}, &init))
 
-	call := func(seq int64) error {
-		var res protocol.FeedObserveResponse
-		return tr.Call(ctxT(t), protocol.MethodFeedObserve,
-			protocol.FeedObserveRequest{Agent: "a", Events: feedBatch(feedEvent(seq))}, &res)
-	}
+	// One context for every call, made before the cleanup below, so it is
+	// cancelled only after the held calls are released and have returned.
+	ctx := ctxT(t)
+	const calls = MaxInFlight + waitingCalls + 1
+	errs := make(chan error, calls)
 	var wg sync.WaitGroup
-	for i := range MaxInFlight + waitingCalls {
-		wg.Add(1)
-		go func() { defer wg.Done(); _ = call(int64(i + 1)) }()
+	for i := range calls {
+		wg.Go(func() {
+			var res protocol.FeedObserveResponse
+			errs <- tr.Call(ctx, protocol.MethodFeedObserve,
+				protocol.FeedObserveRequest{Agent: "a", Events: feedBatch(feedEvent(int64(i + 1)))}, &res)
+		})
 	}
 	t.Cleanup(func() { close(release); wg.Wait() })
+	select {
+	case err := <-errs:
+		require.Equal(t, connectrpc.CodeResourceExhausted, connectrpc.CodeOf(err), "%v", err)
+	case <-time.After(wait):
+		t.Fatal("no call was answered busy")
+	}
 	require.Eventually(t, func() bool { return running.Load() == MaxInFlight }, wait, 5*time.Millisecond)
-	// Give the waiting calls time to be admitted; then one more is turned away.
-	require.Eventually(t, func() bool {
-		start := time.Now()
-		err := call(1000)
-		return connectrpc.CodeOf(err) == connectrpc.CodeResourceExhausted && time.Since(start) < time.Second
-	}, wait, 50*time.Millisecond)
 }
 
 // TestNotifierInAChildProcessOnEveryTransport: both hooks reach a notifier
