@@ -1,6 +1,7 @@
 package plugintool
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"fmt"
 	"io"
@@ -20,6 +21,7 @@ const (
 	maxManifestBytes  = 1 << 20
 	maxRelativePath   = 255
 	signatureFileMode = 0o644
+	maxKeyScan        = 64 << 10
 )
 
 // relativePathPattern is the manifest's rule for a path in files: slash
@@ -101,6 +103,9 @@ func folderFiles(dir string) ([]string, error) {
 		if !validRelativePath(rel) {
 			return fmt.Errorf("%s cannot be listed in the manifest (letters, digits, '.', '_' and '-', no segment starting with a dot, at most %d characters); remove it from the folder", p, maxRelativePath)
 		}
+		if err := refuseKeyFile(p); err != nil {
+			return err
+		}
 		out = append(out, rel)
 		return nil
 	})
@@ -109,6 +114,25 @@ func folderFiles(dir string) ([]string, error) {
 	}
 	sort.Strings(out)
 	return out, nil
+}
+
+// refuseKeyFile refuses a file that holds a PEM private key: a folder is
+// shipped to other people, and a key listed in its manifest ships with it.
+func refuseKeyFile(p string) error {
+	f, err := os.Open(p)
+	if err != nil {
+		return fmt.Errorf("%s cannot be read", p)
+	}
+	defer func() { _ = f.Close() }()
+	// A key file is small; a larger file is read up to this cap only.
+	b, err := io.ReadAll(io.LimitReader(f, maxKeyScan))
+	if err != nil {
+		return fmt.Errorf("%s cannot be read", p)
+	}
+	if bytes.Contains(b, []byte("-----BEGIN ")) && bytes.Contains(b, []byte("PRIVATE KEY-----")) {
+		return fmt.Errorf("%s holds a PEM private key; remove it from the folder, it would ship with the plugin", p)
+	}
+	return nil
 }
 
 func checkDirNotEmpty(p string) error {

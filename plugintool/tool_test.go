@@ -211,7 +211,10 @@ func TestFillManifestRefusals(t *testing.T) {
 		want  string
 	}{
 		"empty directory": {func(dir string) { _ = os.Mkdir(filepath.Join(dir, "empty"), 0o755) }, "empty directory"},
-		"dot file":        {func(dir string) { _ = os.WriteFile(filepath.Join(dir, ".DS_Store"), []byte("x"), 0o644) }, "cannot be listed"},
+		"private key": {func(dir string) {
+			_ = os.WriteFile(filepath.Join(dir, "k.pem"), []byte("-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----\n"), 0o644)
+		}, "PEM private key"},
+		"dot file": {func(dir string) { _ = os.WriteFile(filepath.Join(dir, ".DS_Store"), []byte("x"), 0o644) }, "cannot be listed"},
 		"symlink": {func(dir string) {
 			_ = os.Symlink(filepath.Join(dir, "bin", "acme"), filepath.Join(dir, "link"))
 		}, "regular files only"},
