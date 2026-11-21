@@ -1,0 +1,11 @@
+{
+  "manifestVersion": 1,
+  "name": "acme-vector",
+  "version": "1.0.0",
+  "publisher": "Acme",
+  "protocol": ["basalt-plugin/1"],
+  "hooks": { "feed.observe": { "contract": "feed/1" } },
+  "endpoint": { "local": { "transport": "jsonrpc-stdio", "command": "bin/acme-ner" } },
+  "files": { "bin/acme-ner": "sha256:dc6d3992375e9bdb57de54ef6d369a2968ef0d51ff8c0a2ab36d29ce2fb5f228" },
+  "network": { "egress": [] }
+}

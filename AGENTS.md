@@ -18,6 +18,7 @@ Read [README.md](README.md) for what the SDK promises plugin authors, and the pa
 
 ```
 *.go                  package basaltplugin: Serve, options, the notifier interfaces, typed events
+plugintool/           author tooling: keygen, manifest hashes, sign, folder check (cmd/basalt-plugin is its command)
 protocol/             the protocol's JSON message types and limits (copied from the engine)
 proto/                plugin.proto and the generated ConnectRPC service (make proto)
 examples/notifier     a complete notifier, the one the README shows
