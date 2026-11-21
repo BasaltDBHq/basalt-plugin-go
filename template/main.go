@@ -13,9 +13,11 @@
 //	  "protocol": ["basalt-plugin/1"],
 //	  "hooks": { "feed.observe": { "contract": "feed/1" } },
 //	  "endpoint": { "local": { "transport": "jsonrpc-stdio", "command": "bin/hello-feed" } },
-//	  "files": { "bin/hello-feed": "sha256:<hash of the binary>" },
 //	  "network": { "egress": [] }
 //	}
+//
+// Run basalt-plugin manifest on the folder to add the "files" hashes, and
+// basalt-plugin check to run the plugin as the engine does.
 //
 // To serve another transport, change endpoint.local.transport to jsonrpc-unix
 // or connectrpc and add "args": ["-transport", "<the same name>"]. The binary

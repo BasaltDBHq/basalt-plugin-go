@@ -87,19 +87,21 @@ The SDK declares a hook for each of the two interfaces the plugin implements. Im
 
 Write nothing to stdout. On the default transport, stdout carries the protocol. Use stderr for your own output.
 
-## Check it with `basalt plugin check`
+## Check, hash and sign with `basalt-plugin`
 
-`basalt plugin check` starts your plugin the way the engine does, runs the handshake and a health check, sends each hook a fixed sample, and stops it. It needs no database.
+`basalt-plugin` is the author's tool. It runs on your machine, as you, and needs no engine, no database, no signature and no trusted key.
 
-You need a `basalt` binary that has the `basalt plugin` commands. Engine releases up to `v0.0.1-alpha.2` do not have them yet; until the next release, build the engine from source (see the [engine's README](https://github.com/BasaltDBHq/BasaltDB#readme)). The steps below are for an engine in same-user mode: its `engine.json` has `"mode": "SAME_USER"` and lists the agent you pass to `--agents`. `trust`, `add` and `enable` each ask you to confirm.
+```sh
+go install github.com/basaltdbhq/basalt-plugin-go/cmd/basalt-plugin@latest
+```
 
-1. Build the plugin into a directory of its own:
+1. Build the plugin into a folder of its own:
 
    ```sh
    go build -o hello-notify/bin/hello-notify .
    ```
 
-2. Write `hello-notify/basalt-plugin.json`. The `files` entry holds the SHA-256 of the binary (`shasum -a 256 hello-notify/bin/hello-notify`). The name, the version and the hooks must equal what the plugin says about itself, or the engine refuses it.
+2. Write `hello-notify/basalt-plugin.json`, with no `files` entry. The name, the version and the hooks must equal what the plugin says about itself, or the engine refuses it.
 
    ```json
    {
@@ -110,46 +112,48 @@ You need a `basalt` binary that has the `basalt plugin` commands. Engine release
        "approval.deliver": { "contract": "deliver/1" }
      },
      "endpoint": { "local": { "transport": "jsonrpc-stdio", "command": "bin/hello-notify" } },
-     "files": { "bin/hello-notify": "sha256:<hash of the binary>" },
      "network": { "egress": [] }
    }
    ```
 
-3. Make a signing key and sign the plugin:
+3. Fill in the file hashes. Run it again after every rebuild:
 
    ```sh
-   basalt plugin keygen --out keys
-   basalt plugin sign hello-notify --key keys/<key id>.key
+   basalt-plugin manifest hello-notify
    ```
 
-4. Trust your key on your own engine:
+   It writes the manifest's `files` from what the folder holds: every file but the manifest and its signature, each with its SHA-256. No other byte of the manifest changes. It refuses what the engine refuses: a symlink, an empty directory, a file the manifest cannot name (a `.DS_Store`, for one).
+
+4. Check it:
 
    ```sh
-   basalt plugin trust keys/<key id>.pub
+   basalt-plugin check hello-notify
    ```
 
-5. Install the plugin for the agents it should serve, and turn it on:
-
-   ```sh
-   basalt plugin add hello-notify --agents product_a
-   basalt plugin enable hello-notify
-   ```
-
-6. Check it:
-
-   ```sh
-   basalt plugin check hello-notify
-   ```
-
-   It prints one line for the handshake and one per hook:
+   It starts your program the way the engine does (its own process group, the folder as the working directory, no environment but `BASALT_PLUGIN_SOCKET` for a socket transport), runs the handshake and a health check, sends each hook a fixed sample, and stops it. It prints one line for the handshake and one per hook:
 
    ```
-   plugin hello-notify/default: initialize 3ms, health READY 1ms
-   plugin hello-notify/default: approval.deliver 1ms
-   plugin hello-notify/default: feed.observe lastSeq 2 1ms
+   initialize 3ms, health READY 1ms
+   approval.deliver 1ms
+   feed.observe lastSeq 2 1ms
    ```
+
+   It also refuses a folder the engine would refuse: a hash that is not the manifest's, a file the manifest does not list, a plugin that names another version or other hooks than its manifest. It does not run as root, and it has nothing to start for a remote plugin. All three transports work.
 
 The samples `check` sends answer `true` to `IsCheckSample()`. Answer them like any other event, but do not post them to a person.
+
+### Sign a plugin
+
+A person who installs your plugin approves it on the engine's page. If you publish plugins for others, sign the folder so they can tell it came from you:
+
+```sh
+basalt-plugin keygen --out keys
+basalt-plugin sign hello-notify --key keys/<key id>.key
+```
+
+`keygen` writes `keys/<key id>.key` (mode `0600`, never printed) and `keys/<key id>.pub`, and never overwrites a file. `sign` checks every listed file against its hash, then writes `basalt-plugin.json.sig` next to the manifest: ECDSA P-256 over the manifest's exact bytes. It refuses a key file that others can read, a symlink, or a file owned by someone else. Sign after the last `manifest`: a change to the manifest or to a listed file breaks the signature, and `manifest` removes a signature it has made stale. Keep the private key secret.
+
+The same code is the package `plugintool`, for a build script that wants it without the command.
 
 ## Start from the template
 
@@ -183,12 +187,14 @@ A plugin on another host serves ConnectRPC over TLS on a listener you supply, wi
 | Import path | What it is |
 | --- | --- |
 | `github.com/basaltdbhq/basalt-plugin-go` | Package `basaltplugin`: the SDK. Most plugins need only this. |
+| `.../plugintool` | Key generation, manifest hashes, signing and folder check, the code behind `basalt-plugin`. |
 | `.../protocol` | The protocol's JSON message types and limits, for code that speaks the protocol itself. |
+| `.../cmd/basalt-plugin` | The author's command: `keygen`, `manifest`, `sign`, `check`. |
 | `.../proto/basalt/plugin/v1` and `.../pluginv1connect` | The generated ConnectRPC service, `basalt.plugin.v1.PluginService`, and its `.proto` file. |
 
 ## Protocol and versions
 
-The engine defines the plugin protocol: its contract, its JSON schemas and the service definition. This module holds copies of what it needs: the `.proto` file under `proto/` (it differs from the engine's only in its header comment and `go_package`), the message types in `protocol/`, and the contract's samples under `testdata/`. They were taken from BasaltDB commit `d2fd2b9c340e`, which is not yet in a tagged engine release.
+The engine defines the plugin protocol: its contract, its JSON schemas and the service definition. This module holds copies of what it needs: the `.proto` file under `proto/` (it differs from the engine's only in its header comment and `go_package`), the message types in `protocol/`, and the contract's samples under `testdata/` (`plugintool/samples/` holds the two the check sends). The signature format and the manifest rules `basalt-plugin` follows are the engine's; `plugintool/testdata/sign-vector/` holds a plugin and signatures made by both sides, and the engine's tests verify the same files. They were taken from BasaltDB commit `d2fd2b9c340e`, which is not yet in a tagged engine release.
 
 This module's major version follows the protocol's. Every `v0` and `v1` release speaks `basalt-plugin/1`; a new protocol major version means a new module major version. The event type names (`dev.basaltdb.*`) are the engine's and do not change with this module's version.
 
