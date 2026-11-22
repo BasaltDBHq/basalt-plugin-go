@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `basalt-plugin`, the author's command, and its package `plugintool`: `keygen` makes a signing key, `manifest` writes the manifest's `files` hashes from the folder, `sign` signs the folder, and `check` runs the folder's program as the engine would and sends it the contract's samples, on all three transports. They need no engine, no installed copy and no trusted key. They replace `basalt plugin keygen` and `basalt plugin sign`, which leave the `basalt` binary.
+
 ## [0.1.0-alpha] - 2026-11-19
 
 The first release. It speaks `basalt-plugin/1`.

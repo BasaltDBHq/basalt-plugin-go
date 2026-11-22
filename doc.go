@@ -123,33 +123,30 @@
 // The template (directory template, package main) is a feed observer that
 // writes one line per event to stderr, with a transport flag and the manifest
 // it needs. Copy template/main.go into a module of your own that requires
-// this one (go get github.com/basaltdbhq/basalt-plugin-go). The steps below
-// are for same-user mode: engine.json has "mode": "SAME_USER" and lists the
-// agent you pass to --agents, and trust, add and enable ask for a yes at the
-// prompt.
+// this one (go get github.com/basaltdbhq/basalt-plugin-go). The steps use
+// the basalt-plugin command (go install
+// github.com/basaltdbhq/basalt-plugin-go/cmd/basalt-plugin@latest), which
+// needs no engine:
 //
 //  1. Build it, from your module:
 //     go build -o hello-feed/bin/hello-feed .
 //  2. Write hello-feed/basalt-plugin.json. The template's comment has a
-//     manifest to start from. Its "files" entry holds the binary's SHA-256
-//     (shasum -a 256 hello-feed/bin/hello-feed), and its name, version and
-//     hooks must equal what Info and the interfaces the plugin implements
-//     say, or the engine refuses the plugin at initialize.
-//  3. Make a key and sign: basalt plugin keygen --out KEYDIR, then
-//     basalt plugin sign hello-feed --key KEYDIR/KEYID.key.
-//  4. Trust your key on your own engine: basalt plugin trust KEYDIR/KEYID.pub.
-//  5. Install and turn it on, for the agents it should serve:
-//     basalt plugin add hello-feed --agents product_a, then
-//     basalt plugin enable hello-feed.
-//  6. Check it: basalt plugin check hello-feed. It starts the plugin, runs
-//     initialize and health, sends each declared notifier hook a fixed
-//     sample, and sends shutdown. It prints one line for initialize and
-//     health and one per hook:
-//     "plugin hello-feed/default: initialize 3ms, health READY 1ms"
-//     "plugin hello-feed/default: feed.observe lastSeq 2 1ms"
+//     manifest to start from. Its name, version and hooks must equal what
+//     Info and the interfaces the plugin implements say, or the engine
+//     refuses the plugin at initialize.
+//  3. Fill in the file hashes: basalt-plugin manifest hello-feed. Run it
+//     again after every rebuild.
+//  4. Check it: basalt-plugin check hello-feed. It starts the plugin the way
+//     the engine does, runs initialize and health, sends each declared
+//     notifier hook a fixed sample, and sends shutdown. It prints one line
+//     for initialize and health and one per hook:
+//     "initialize 3ms, health READY 1ms"
+//     "feed.observe lastSeq 2 1ms"
+//  5. To publish it, sign it: basalt-plugin keygen --out KEYDIR, then
+//     basalt-plugin sign hello-feed --key KEYDIR/KEYID.key.
 //
-// In same-user mode (the foreground engine, for development and CI) all of
-// this runs as your user under the engine's config directory.
+// A person installs a plugin through the engine, which asks them to approve
+// it.
 //
 // # Choosing a transport
 //
