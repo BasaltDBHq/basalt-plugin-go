@@ -187,18 +187,19 @@ func TestEverySampleDecodesTyped(t *testing.T) {
 	evs := p.lastBatch(t).Events
 	require.Equal(t, WriteApplied{
 		ChangeID: "0193a1b3-0000-7000-8000-000000000001", RunID: "0193a1b2-7c4d-7e8f-9a0b-1c2d3e4f5a6b",
-		TaskID: "0193a1b2-7c4d-7e8f-9a0b-1c2d3e4f5a00", Op: OpUpdate, Table: "public.cases", Rows: 1,
+		TaskID: "0193a1b2-7c4d-7e8f-9a0b-1c2d3e4f5a00", Op: OpUpdate, Store: Store{Kind: StorePostgres, Verb: "UPDATE"}, Resource: "public.cases", Rows: 1,
 	}, evs[0].Detail)
 	require.Equal(t, TypeWriteApplied, evs[0].Type)
 	require.Equal(t, time.Date(2026, 11, 19, 6, 2, 11, 513958000, time.UTC), evs[0].Time.UTC())
 	require.Equal(t, int64(4211), evs[0].Seq)
 	require.Equal(t, WriteRefused{
 		ChangeID: "0193a1b3-0000-7000-8000-000000000002", RunID: "0193a1b2-7c4d-7e8f-9a0b-1c2d3e4f5a6b",
-		Op: OpDelete, ReasonCode: "ROW_LIMIT_EXCEEDED",
+		Op: OpDelete, Store: Store{Kind: StorePostgres, Verb: "DELETE"}, ReasonCode: "ROW_LIMIT_EXCEEDED",
 	}, evs[1].Detail)
 	held, ok := evs[2].Detail.(WriteHeld)
 	require.True(t, ok)
 	require.Equal(t, int64(27), held.Rows)
+	require.Equal(t, Store{Kind: StorePostgres, Verb: "UPDATE"}, held.Store)
 	require.Equal(t, "0193a1b3-1111-7000-8000-000000000001", held.ApprovalID)
 	require.Equal(t, time.Date(2026, 11, 20, 6, 3, 2, 120000000, time.UTC), held.ExpiresAt.UTC())
 	require.Equal(t, ApprovalSigned{ChangeID: "0193a1b3-0000-7000-8000-000000000003", ApprovalID: "0193a1b3-1111-7000-8000-000000000001"}, evs[3].Detail)
@@ -259,7 +260,7 @@ func TestEverySampleDecodesTyped(t *testing.T) {
 	require.False(t, n.IsCheckSample())
 	require.Equal(t, TypeRevertRequested, n.Type)
 	require.Equal(t, KindRevertRequested, n.Kind)
-	require.Equal(t, "product_a", n.Agent)
+	require.Equal(t, "agent:product_a", n.Agent)
 	require.Equal(t, "0193a1b3-2222-7000-8000-000000000001", n.RevertID)
 	require.Equal(t, LinkOpensAnywhere, n.LinkOpens)
 	require.True(t, strings.HasPrefix(n.Link, "https://portal.basaltvault.app/reverts/"))
@@ -270,16 +271,16 @@ func TestEverySampleDecodesTyped(t *testing.T) {
 // TestRawIsTheBytesAsSent: odd spacing, key order, an unknown field and
 // characters JSON may escape all survive into Raw, on every transport.
 func TestRawIsTheBytesAsSent(t *testing.T) {
-	odd := `{ "data" : {"seq": 3, "table": "a<b&c>", "zz": [1, 2]}, "type":"dev.basaltdb.write.applied",` +
-		` "specversion" : "1.0", "id":"i:3", "source":"urn:uuid:i", "subject":"product_a", "x-ext": "é"}`
+	odd := `{ "data" : {"seq": 3, "resource": "a<b&c>", "zz": [1, 2]}, "type":"dev.basaltdb.write.applied",` +
+		` "specversion" : "1.0", "id":"i:3", "source":"urn:uuid:i", "subject":"agent:product_a", "x-ext": "é"}`
 	notice := `{ "type": "dev.basaltdb.approval.requested", "data": {"kind": "APPROVAL_REQUESTED", "headline": "a<b", "later": null}, "id": "n" }`
 
 	t.Run("stdio", func(t *testing.T) {
 		p := &recordingNotifier{}
 		_, c := serveStdio(t, p)
-		require.Nil(t, c.call("feed.observe", `{"agent":"product_a","events":[`+odd+`]}`).Error)
+		require.Nil(t, c.call("feed.observe", `{"agent":"agent:product_a","events":[`+odd+`]}`).Error)
 		require.Equal(t, odd, string(p.lastBatch(t).Events[0].Raw()))
-		require.Nil(t, c.call("approval.deliver", `{"agent":"product_a","event":`+notice+`}`).Error)
+		require.Nil(t, c.call("approval.deliver", `{"agent":"agent:product_a","event":`+notice+`}`).Error)
 		require.Equal(t, notice, string(p.lastNotice(t).Raw()))
 	})
 	t.Run("connectrpc", func(t *testing.T) {
@@ -289,7 +290,7 @@ func TestRawIsTheBytesAsSent(t *testing.T) {
 		// The engine sends the batch compacted, as on JSON-RPC.
 		var res protocol.FeedObserveResponse
 		require.NoError(t, tr.Call(ctxT(t), protocol.MethodFeedObserve,
-			protocol.FeedObserveRequest{Agent: "product_a", Events: json.RawMessage("[" + odd + "]")}, &res))
+			protocol.FeedObserveRequest{Agent: "agent:product_a", Events: json.RawMessage("[" + odd + "]")}, &res))
 		require.Equal(t, int64(3), res.LastSeq)
 		require.Equal(t, compact(t, []byte(odd)), string(p.lastBatch(t).Events[0].Raw()))
 		require.Contains(t, string(p.lastBatch(t).Events[0].Raw()), "a<b&c>")
@@ -302,10 +303,10 @@ func TestRawIsTheBytesAsSent(t *testing.T) {
 func TestUnknownTypeAndFieldsReachThePlugin(t *testing.T) {
 	p := &recordingNotifier{}
 	_, c := serveStdio(t, p)
-	unknown := `{"specversion":"1.0","id":"x:9","source":"urn:uuid:x","type":"dev.basaltdb.later.thing","subject":"product_a",` +
-		`"data":{"installId":"x","seq":9,"agent":"product_a","newField":{"a":1}}}`
+	unknown := `{"specversion":"1.0","id":"x:9","source":"urn:uuid:x","type":"dev.basaltdb.later.thing","subject":"agent:product_a",` +
+		`"data":{"installId":"x","seq":9,"agent":"agent:product_a","newField":{"a":1}}}`
 	known := strings.Replace(feedEvent(4), `"rows":1`, `"rows":1,"laterField":"v"`, 1)
-	r := c.call("feed.observe", `{"agent":"product_a","events":[`+known+`,`+unknown+`],"laterParam":1}`)
+	r := c.call("feed.observe", `{"agent":"agent:product_a","events":[`+known+`,`+unknown+`],"laterParam":1}`)
 	require.Nil(t, r.Error)
 	require.JSONEq(t, `{"lastSeq":9}`, string(r.Result))
 	b := p.lastBatch(t)
@@ -314,24 +315,24 @@ func TestUnknownTypeAndFieldsReachThePlugin(t *testing.T) {
 	require.Equal(t, int64(9), b.Events[1].Seq)
 	require.Equal(t, "dev.basaltdb.later.thing", b.Events[1].Type)
 
-	later := `{"specversion":"1.0","id":"n2","type":"dev.basaltdb.later.notice","data":{"kind":"LATER_KIND","agent":"product_a"}}`
-	require.Nil(t, c.call("approval.deliver", `{"agent":"product_a","event":`+later+`}`).Error)
+	later := `{"specversion":"1.0","id":"n2","type":"dev.basaltdb.later.notice","data":{"kind":"LATER_KIND","agent":"agent:product_a"}}`
+	require.Nil(t, c.call("approval.deliver", `{"agent":"agent:product_a","event":`+later+`}`).Error)
 	require.Equal(t, NoticeKind("LATER_KIND"), p.lastNotice(t).Kind)
 
 	// A later data field may share a name with an envelope attribute, in any
 	// case and of any type: it is still an unknown field, and ignored.
 	for _, extra := range []string{`"time":5`, `"subject":{}`, `"id":7`, `"Source":[1]`, `"data":"x"`, `"specversion":2`} {
 		notice := strings.Replace(noticeEvent, `"kind":"APPROVAL_REQUESTED"`, `"kind":"APPROVAL_REQUESTED",`+extra, 1)
-		r := c.call("approval.deliver", `{"agent":"product_a","event":`+notice+`}`)
+		r := c.call("approval.deliver", `{"agent":"agent:product_a","event":`+notice+`}`)
 		require.Nil(t, r.Error, extra)
 		n := p.lastNotice(t)
 		require.Equal(t, "0193a1b4-0000-7000-8000-000000000001", n.ID, extra)
-		require.Equal(t, "product_a", n.Subject, extra)
+		require.Equal(t, "agent:product_a", n.Subject, extra)
 		require.Equal(t, KindApprovalRequested, n.Kind, extra)
 	}
 	// So may a feed event's data.
 	ev := strings.Replace(feedEvent(5), `"rows":1`, `"rows":1,"time":5,"subject":{},"id":7`, 1)
-	require.Nil(t, c.call("feed.observe", `{"agent":"product_a","events":[`+ev+`]}`).Error)
+	require.Nil(t, c.call("feed.observe", `{"agent":"agent:product_a","events":[`+ev+`]}`).Error)
 	require.Equal(t, "0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee:5", p.lastBatch(t).Events[0].ID)
 }
 
@@ -339,7 +340,7 @@ func TestUnknownTypeAndFieldsReachThePlugin(t *testing.T) {
 // batch, or an error, is never sent as an answer, and the plugin's error
 // text never reaches the engine.
 func TestObserveFeedAnswerIsHeldToTheContract(t *testing.T) {
-	batch := `{"agent":"product_a","events":` + string(feedBatch(feedEvent(10), feedEvent(12))) + `}`
+	batch := `{"agent":"agent:product_a","events":` + string(feedBatch(feedEvent(10), feedEvent(12))) + `}`
 	for _, bad := range []int64{0, 11, 13, -1} {
 		p := &recordingNotifier{answer: func(FeedBatch) (int64, error) { return bad, nil }}
 		_, c := serveStdio(t, p)
@@ -359,12 +360,12 @@ func TestObserveFeedAnswerIsHeldToTheContract(t *testing.T) {
 
 	p = &recordingNotifier{deliver: errors.New(marker)}
 	_, c = serveStdio(t, p)
-	r = c.call("approval.deliver", `{"agent":"product_a","event":`+noticeEvent+`}`)
+	r = c.call("approval.deliver", `{"agent":"agent:product_a","event":`+noticeEvent+`}`)
 	require.NotNil(t, r.Error)
 	require.NotContains(t, r.Error.Message, marker)
 
 	_, c = serveStdio(t, panickingDeliverer{})
-	r = c.call("approval.deliver", `{"agent":"product_a","event":`+noticeEvent+`}`)
+	r = c.call("approval.deliver", `{"agent":"agent:product_a","event":`+noticeEvent+`}`)
 	require.NotNil(t, r.Error, "a panic in DeliverApproval fails the call")
 	require.Nil(t, c.call("health", `{}`).Error, "and the plugin still serves")
 
@@ -504,8 +505,8 @@ func TestConnectCallsPastTheWaitingCapAreAnsweredBusy(t *testing.T) {
 // event of a type or with a field it does not know does not break the call.
 func TestNotifierInAChildProcessOnEveryTransport(t *testing.T) {
 	later := `{"specversion":"1.0","id":"x:9","source":"urn:uuid:x","type":"dev.basaltdb.later.thing",` +
-		`"subject":"product_a","datacontenttype":"application/json","newattribute":"v",` +
-		`"data":{"installId":"x","seq":9,"agent":"product_a","newField":{"a":[1,2]}}}`
+		`"subject":"agent:product_a","datacontenttype":"application/json","newattribute":"v",` +
+		`"data":{"installId":"x","seq":9,"agent":"agent:product_a","newField":{"a":[1,2]}}}`
 	const big = 1<<53 + 1 // a seq a float64 cannot hold
 
 	t.Run("jsonrpc-stdio", func(t *testing.T) {
@@ -521,10 +522,10 @@ func TestNotifierInAChildProcessOnEveryTransport(t *testing.T) {
 			_ = cmd.Wait()
 		})
 		c := &stdioClient{t: t, w: in, r: bufio.NewReaderSize(out, MaxMessageBytes+4096)}
-		r := c.call("feed.observe", `{"agent":"product_a","events":`+string(feedBatch(feedEvent(5), later, feedEvent(big)))+`}`)
+		r := c.call("feed.observe", `{"agent":"agent:product_a","events":`+string(feedBatch(feedEvent(5), later, feedEvent(big)))+`}`)
 		require.Nil(t, r.Error)
 		require.JSONEq(t, `{"lastSeq":`+strconv.FormatInt(big, 10)+`}`, string(r.Result))
-		r = c.call("approval.deliver", `{"agent":"product_a","event":`+noticeEvent+`}`)
+		r = c.call("approval.deliver", `{"agent":"agent:product_a","event":`+noticeEvent+`}`)
 		require.Nil(t, r.Error)
 		require.JSONEq(t, `{}`, string(r.Result))
 	})
@@ -542,11 +543,11 @@ func TestNotifierInAChildProcessOnEveryTransport(t *testing.T) {
 			tr := dialT(t, tc.dial, path)
 			var res protocol.FeedObserveResponse
 			require.NoError(t, tr.Call(ctxT(t), protocol.MethodFeedObserve,
-				protocol.FeedObserveRequest{Agent: "product_a", Events: feedBatch(feedEvent(5), later, feedEvent(big))}, &res))
+				protocol.FeedObserveRequest{Agent: "agent:product_a", Events: feedBatch(feedEvent(5), later, feedEvent(big))}, &res))
 			require.Equal(t, int64(big), res.LastSeq)
 			var empty map[string]any
 			require.NoError(t, tr.Call(ctxT(t), protocol.MethodApprovalDeliver,
-				protocol.ApprovalDeliverRequest{Agent: "product_a", Event: json.RawMessage(noticeEvent)}, &empty))
+				protocol.ApprovalDeliverRequest{Agent: "agent:product_a", Event: json.RawMessage(noticeEvent)}, &empty))
 			require.Empty(t, empty)
 		})
 	}

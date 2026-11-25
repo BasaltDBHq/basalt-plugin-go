@@ -42,7 +42,7 @@ func TestNotifierExamplesDecode(t *testing.T) {
 	var feed FeedObserveRequest
 	load(t, "valid-feed-request.json", &feed)
 	var events []json.RawMessage
-	if err := json.Unmarshal(feed.Events, &events); err != nil || feed.Agent != "product_a" || len(events) != 7 {
+	if err := json.Unmarshal(feed.Events, &events); err != nil || feed.Agent != "agent:product_a" || len(events) != 7 {
 		t.Fatalf("feed request = %+v (%v)", feed, err)
 	}
 	var res FeedObserveResponse
@@ -52,7 +52,7 @@ func TestNotifierExamplesDecode(t *testing.T) {
 	}
 	var notice ApprovalDeliverRequest
 	load(t, "valid-deliver-request-check-sample.json", &notice)
-	if notice.Agent != "product_a" || !json.Valid(notice.Event) || notice.Event[0] != '{' {
+	if notice.Agent != "agent:product_a" || !json.Valid(notice.Event) || notice.Event[0] != '{' {
 		t.Fatalf("deliver request = %+v", notice)
 	}
 	var empty ApprovalDeliverResponse
@@ -62,11 +62,11 @@ func TestNotifierExamplesDecode(t *testing.T) {
 // TestMarshalKeepsEventBytes: a transport sends the event bytes as the engine
 // built them, compacted but with no character escaped.
 func TestMarshalKeepsEventBytes(t *testing.T) {
-	b, err := Marshal(FeedObserveRequest{Agent: "a", Events: json.RawMessage(`[ {"table": "a<b&c>d"} ]`)})
+	b, err := Marshal(FeedObserveRequest{Agent: "a", Events: json.RawMessage(`[ {"resource": "a<b&c>d"} ]`)})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(b) != `{"agent":"a","events":[{"table":"a<b&c>d"}]}` {
+	if string(b) != `{"agent":"a","events":[{"resource":"a<b&c>d"}]}` {
 		t.Fatalf("got %s", b)
 	}
 }

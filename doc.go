@@ -90,8 +90,8 @@
 //   - Forward unchanged. Every event is a CloudEvents 1.0 event. Raw returns
 //     its exact JSON bytes, so a plugin that passes events to a message broker
 //     or a webhook sends Raw, never a JSON encoding of FeedEvent or Notice.
-//   - Plain text. Headline, Table, Agent and every other string are the
-//     engine's or the database's text, and an agent names its own tables. The
+//   - Plain text. Headline, Resource, Agent and every other string are the
+//     engine's or the store's text, and an agent names what it creates. The
 //     engine keeps them to one plain line, but a chat's own markup (mentions
 //     such as @everyone or <!channel>, emphasis, links) is yours to escape
 //     before you post. A notice's link opens anywhere (LinkOpensAnywhere) or

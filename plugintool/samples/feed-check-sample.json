@@ -1,5 +1,5 @@
 {
-  "agent": "product_a",
+  "agent": "agent:product_a",
   "events": [
     {
       "specversion": "1.0",
@@ -7,15 +7,19 @@
       "source": "urn:uuid:00000000-0000-0000-0000-000000000000",
       "type": "dev.basaltdb.write.applied",
       "time": "2026-01-01T00:00:00Z",
-      "subject": "product_a",
+      "subject": "agent:product_a",
       "datacontenttype": "application/json",
       "data": {
         "installId": "00000000-0000-0000-0000-000000000000",
         "seq": 1,
-        "agent": "product_a",
+        "agent": "agent:product_a",
         "changeId": "00000000-0000-7000-8000-000000000001",
         "op": "UPDATE",
-        "table": "basalt_check.sample",
+        "store": {
+          "kind": "POSTGRES",
+          "verb": "UPDATE"
+        },
+        "resource": "basalt_check.sample",
         "rows": 1,
         "cascadedRows": 0
       }
@@ -26,16 +30,20 @@
       "source": "urn:uuid:00000000-0000-0000-0000-000000000000",
       "type": "dev.basaltdb.write.held",
       "time": "2026-01-01T00:00:01Z",
-      "subject": "product_a",
+      "subject": "agent:product_a",
       "datacontenttype": "application/json",
       "data": {
         "installId": "00000000-0000-0000-0000-000000000000",
         "seq": 2,
-        "agent": "product_a",
+        "agent": "agent:product_a",
         "changeId": "00000000-0000-7000-8000-000000000002",
         "approvalId": "00000000-0000-7000-8000-000000000003",
         "runId": "00000000-0000-7000-8000-000000000004",
         "op": "DELETE",
+        "store": {
+          "kind": "POSTGRES",
+          "verb": "DELETE"
+        },
         "rows": 1,
         "expiresAt": "2026-01-02T00:00:01Z"
       }
