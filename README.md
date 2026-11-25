@@ -164,7 +164,7 @@ The same code is the package `plugintool`, for a build script that wants it with
 - **Events arrive at least once.** After a crash, a restart or a failed call the engine sends them again. Two events with the same `Source` and `ID` are the same event: dedup by that pair.
 - **Skip what you do not know.** A later engine may send an event type this SDK does not know (`Detail` is nil, `Seq` is set) or a notice of an unknown `Kind`. Skip it and still count it as handled.
 - **Forward events unchanged.** Every event is a CloudEvents 1.0 event. `Raw()` returns its exact JSON bytes; send those to a broker or a webhook, not a re-encoding.
-- **Escape text for your channel.** Headlines, table names and agent names are plain text. An agent names its own tables, so escape your chat's markup (mentions, links, emphasis) before you post.
+- **Escape text for your channel.** Headlines, resource names and agent names (`agent:<name>`) are plain text. An agent names what it creates (in Postgres, its tables), so escape your chat's markup (mentions, links, emphasis) before you post.
 - **A notice's link can hold the request.** A long link carries the statement, its parameters and the affected rows. Anyone who can read where you deliver the notice can read them. The link grants no power: approving still needs the person's passkey.
 - **Errors stay in the plugin.** The SDK never sends a handler's error text to the engine, because it may hold a value. Write reasons to stderr.
 
@@ -194,7 +194,7 @@ A plugin on another host serves ConnectRPC over TLS on a listener you supply, wi
 
 ## Protocol and versions
 
-The engine defines the plugin protocol: its contract, its JSON schemas and the service definition. This module holds copies of what it needs: the `.proto` file under `proto/` (it differs from the engine's only in its header comment and `go_package`), the message types in `protocol/`, and the contract's samples under `testdata/` (`plugintool/samples/` holds the two the check sends). The signature format and the manifest rules `basalt-plugin` follows are the engine's; `plugintool/testdata/sign-vector/` holds a plugin and signatures made by both sides, and the engine's tests verify the same files. They were taken from BasaltDB commit `d2fd2b9c340e`, which is not yet in a tagged engine release.
+The engine defines the plugin protocol: its contract, its JSON schemas and the service definition. This module holds copies of what it needs: the `.proto` file under `proto/` (it differs from the engine's only in its header comment and `go_package`), the message types in `protocol/`, and the contract's samples under `testdata/` (`plugintool/samples/` holds the two the check sends). The signature format and the manifest rules `basalt-plugin` follows are the engine's; `plugintool/testdata/sign-vector/` holds a plugin and signatures made by both sides, and the engine's tests verify the same files. The protocol copies were taken from BasaltDB commit `e1478579`, which is not yet in a tagged engine release; the signature vectors from `d2fd2b9c340e`.
 
 This module's major version follows the protocol's. Every `v0` and `v1` release speaks `basalt-plugin/1`; a new protocol major version means a new module major version. The event type names (`dev.basaltdb.*`) are the engine's and do not change with this module's version.
 

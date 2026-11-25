@@ -1,16 +1,16 @@
 {
-  "agent": "product_a",
+  "agent": "agent:product_a",
   "event": {
     "specversion": "1.0",
     "id": "0193a1b4-0000-7000-8000-000000000003",
     "source": "urn:uuid:0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
     "type": "dev.basaltdb.link.replaced",
     "time": "2026-11-19T06:03:02.130000Z",
-    "subject": "product_a",
+    "subject": "agent:product_a",
     "datacontenttype": "application/json",
     "data": {
       "kind": "LINK_REPLACED",
-      "agent": "product_a",
+      "agent": "agent:product_a",
       "approvalId": "0193a1b3-1111-7000-8000-000000000001",
       "headline": "Delete 1 row in public·customers + 30 cascaded rows (public·invoices 28, public·payments 2 [values hidden])",
       "expiresAt": "2026-11-20T06:03:02.120000Z",

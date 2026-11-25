@@ -57,7 +57,7 @@ type CloudEvent struct {
 	// Time is when it happened; zero when the event has none (the
 	// skipped-ahead marker).
 	Time time.Time
-	// Subject is the agent's name.
+	// Subject is the agent, agent:<name> with <name> its name in engine.json.
 	Subject         string
 	DataContentType string
 	// Data is the event's data object as it arrived.
@@ -137,7 +137,7 @@ func (b FeedBatch) LastSeq() int64 {
 }
 
 // FeedEvent is one feed event. It holds metadata only: ids, the operation,
-// the table, row counts, an error code, an expiry. Never a row value, a key,
+// the store's kind and verb, the resource, row counts, an error code, an expiry. Never a row value, a key,
 // a statement, an intent or a link, so it is safe to store or forward.
 type FeedEvent struct {
 	CloudEvent
@@ -146,7 +146,7 @@ type FeedEvent struct {
 	// Seq is the event's position in the database's ledger. Sequences are
 	// shared by the database's agents, so one agent's events skip numbers.
 	Seq int64
-	// Agent is the agent's name.
+	// Agent is the agent, agent:<name> with <name> its name in engine.json.
 	Agent string
 	// Detail is the event's typed data: one of WriteApplied, WriteRefused,
 	// WriteHeld, ApprovalSigned, RevertPrepared, RevertSigned,
@@ -166,9 +166,12 @@ type WriteApplied struct {
 	RunID  string `json:"runId"`
 	TaskID string `json:"taskId"`
 	Op     Op     `json:"op"`
-	// Table is the statement's own table, empty when it changed no row. It
-	// is the database's text: show it as plain text, never as markup.
-	Table string `json:"table"`
+	// Store is the store's kind and its own word for the operation.
+	Store Store `json:"store"`
+	// Resource is the request's own resource in the store's form
+	// (schema.table in Postgres), empty when it changed no row. It is the
+	// store's text: show it as plain text, never as markup.
+	Resource string `json:"resource"`
 	// Rows is the rows written, cascades included.
 	Rows         int64 `json:"rows"`
 	CascadedRows int64 `json:"cascadedRows"`
@@ -180,22 +183,42 @@ type WriteRefused struct {
 	RunID    string `json:"runId"`
 	TaskID   string `json:"taskId"`
 	Op       Op     `json:"op"`
+	// Store is the store's kind and its own word for the operation; Verb
+	// is empty on OpOther when the store did not give its command.
+	Store Store `json:"store"`
 	// ReasonCode is the refusal's error code, empty when it has none from
 	// the contract's table.
 	ReasonCode string `json:"reasonCode"`
 }
 
 // WriteHeld: a write was held for the person's approval (TypeWriteHeld).
-// It names no table.
+// It names no resource.
 type WriteHeld struct {
 	ChangeID   string    `json:"changeId"`
 	ApprovalID string    `json:"approvalId"`
 	RunID      string    `json:"runId"`
 	TaskID     string    `json:"taskId"`
 	Op         Op        `json:"op"`
+	Store      Store     `json:"store"`
 	Rows       int64     `json:"rows"`
 	ExpiresAt  time.Time `json:"expiresAt"`
 }
+
+// Store is an event's store part: the store's kind and its own word for
+// the request's operation.
+type Store struct {
+	// Kind is the store's kind, such as StorePostgres.
+	Kind StoreKind `json:"kind"`
+	// Verb is the store's own word for the operation: in Postgres the
+	// statement's command (INSERT, UPDATE, DELETE, or a DDL command).
+	Verb string `json:"verb"`
+}
+
+// StoreKind is the kind of store an agent's action landed in.
+type StoreKind string
+
+// StorePostgres is the one store kind the engine serves.
+const StorePostgres StoreKind = "POSTGRES"
 
 // ApprovalSigned: the person signed a held write (TypeApprovalSigned).
 type ApprovalSigned struct {
@@ -340,7 +363,8 @@ const (
 // intent.
 type Notice struct {
 	CloudEvent
-	Kind  NoticeKind
+	Kind NoticeKind
+	// Agent is the agent, agent:<name> with <name> its name in engine.json.
 	Agent string
 	// Exactly one of ApprovalID (a held write) and RevertID (a revert) is set.
 	ApprovalID string

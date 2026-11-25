@@ -1,5 +1,5 @@
 {
-  "agent": "product_a",
+  "agent": "agent:product_a",
   "events": [
     {
       "specversion": "1.0",
@@ -7,17 +7,21 @@
       "source": "urn:uuid:0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
       "type": "dev.basaltdb.write.applied",
       "time": "2026-11-19T06:02:11.513958Z",
-      "subject": "product_a",
+      "subject": "agent:product_a",
       "datacontenttype": "application/json",
       "data": {
         "installId": "0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
         "seq": 4211,
-        "agent": "product_a",
+        "agent": "agent:product_a",
         "changeId": "0193a1b3-0000-7000-8000-000000000001",
         "runId": "0193a1b2-7c4d-7e8f-9a0b-1c2d3e4f5a6b",
         "taskId": "0193a1b2-7c4d-7e8f-9a0b-1c2d3e4f5a00",
         "op": "UPDATE",
-        "table": "public.cases",
+        "store": {
+          "kind": "POSTGRES",
+          "verb": "UPDATE"
+        },
+        "resource": "public.cases",
         "rows": 1,
         "cascadedRows": 0
       }
@@ -28,15 +32,19 @@
       "source": "urn:uuid:0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
       "type": "dev.basaltdb.write.refused",
       "time": "2026-11-19T06:02:14Z",
-      "subject": "product_a",
+      "subject": "agent:product_a",
       "datacontenttype": "application/json",
       "data": {
         "installId": "0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
         "seq": 4215,
-        "agent": "product_a",
+        "agent": "agent:product_a",
         "changeId": "0193a1b3-0000-7000-8000-000000000002",
         "runId": "0193a1b2-7c4d-7e8f-9a0b-1c2d3e4f5a6b",
         "op": "DELETE",
+        "store": {
+          "kind": "POSTGRES",
+          "verb": "DELETE"
+        },
         "reasonCode": "ROW_LIMIT_EXCEEDED"
       }
     },
@@ -46,17 +54,21 @@
       "source": "urn:uuid:0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
       "type": "dev.basaltdb.write.held",
       "time": "2026-11-19T06:03:02Z",
-      "subject": "product_a",
+      "subject": "agent:product_a",
       "datacontenttype": "application/json",
       "data": {
         "installId": "0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
         "seq": 4219,
-        "agent": "product_a",
+        "agent": "agent:product_a",
         "changeId": "0193a1b3-0000-7000-8000-000000000003",
         "approvalId": "0193a1b3-1111-7000-8000-000000000001",
         "runId": "0193a1b2-7c4d-7e8f-9a0b-1c2d3e4f5a6b",
         "taskId": "0193a1b2-7c4d-7e8f-9a0b-1c2d3e4f5a00",
         "op": "UPDATE",
+        "store": {
+          "kind": "POSTGRES",
+          "verb": "UPDATE"
+        },
         "rows": 27,
         "expiresAt": "2026-11-20T06:03:02.120000Z"
       }
@@ -67,12 +79,12 @@
       "source": "urn:uuid:0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
       "type": "dev.basaltdb.approval.signed",
       "time": "2026-11-19T06:05:40Z",
-      "subject": "product_a",
+      "subject": "agent:product_a",
       "datacontenttype": "application/json",
       "data": {
         "installId": "0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
         "seq": 4230,
-        "agent": "product_a",
+        "agent": "agent:product_a",
         "changeId": "0193a1b3-0000-7000-8000-000000000003",
         "approvalId": "0193a1b3-1111-7000-8000-000000000001"
       }
@@ -83,17 +95,21 @@
       "source": "urn:uuid:0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
       "type": "dev.basaltdb.write.applied",
       "time": "2026-11-19T06:05:41Z",
-      "subject": "product_a",
+      "subject": "agent:product_a",
       "datacontenttype": "application/json",
       "data": {
         "installId": "0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
         "seq": 4231,
-        "agent": "product_a",
+        "agent": "agent:product_a",
         "changeId": "0193a1b3-0000-7000-8000-000000000004",
         "runId": "0193a1b2-7c4d-7e8f-9a0b-1c2d3e4f5a6b",
         "taskId": "0193a1b2-7c4d-7e8f-9a0b-1c2d3e4f5a00",
         "op": "UPDATE",
-        "table": "public.leads",
+        "store": {
+          "kind": "POSTGRES",
+          "verb": "UPDATE"
+        },
+        "resource": "public.leads",
         "rows": 27,
         "cascadedRows": 0
       }
@@ -104,12 +120,12 @@
       "source": "urn:uuid:0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
       "type": "dev.basaltdb.revert.prepared",
       "time": "2026-11-19T07:00:00Z",
-      "subject": "product_a",
+      "subject": "agent:product_a",
       "datacontenttype": "application/json",
       "data": {
         "installId": "0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
         "seq": 4300,
-        "agent": "product_a",
+        "agent": "agent:product_a",
         "revertId": "0193a1b3-2222-7000-8000-000000000001"
       }
     },
@@ -119,12 +135,12 @@
       "source": "urn:uuid:0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
       "type": "dev.basaltdb.revert.applied",
       "time": "2026-11-19T07:04:10Z",
-      "subject": "product_a",
+      "subject": "agent:product_a",
       "datacontenttype": "application/json",
       "data": {
         "installId": "0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee",
         "seq": 4310,
-        "agent": "product_a",
+        "agent": "agent:product_a",
         "changeId": "0193a1b3-0000-7000-8000-000000000005",
         "revertId": "0193a1b3-2222-7000-8000-000000000001"
       }

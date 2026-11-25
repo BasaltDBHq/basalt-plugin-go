@@ -185,13 +185,13 @@ func paramsJSON(params any) ([]byte, error) {
 // Fixtures for the notifier hooks.
 
 // feedEvent is one feed event of type write.applied with the given seq, in
-// its JSON form, with a table name that holds characters JSON may escape.
+// its JSON form, with a resource name that holds characters JSON may escape.
 func feedEvent(seq int64) string {
 	return fmt.Sprintf(`{"specversion":"1.0","id":"0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee:%d",`+
 		`"source":"urn:uuid:0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee","type":"dev.basaltdb.write.applied",`+
-		`"time":"2026-11-19T06:02:11Z","subject":"product_a","datacontenttype":"application/json",`+
-		`"data":{"installId":"0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee","seq":%d,"agent":"product_a",`+
-		`"changeId":"0193a1b3-0000-7000-8000-000000000001","op":"UPDATE","table":"public.a<b&c>","rows":1,"cascadedRows":0}}`, seq, seq)
+		`"time":"2026-11-19T06:02:11Z","subject":"agent:product_a","datacontenttype":"application/json",`+
+		`"data":{"installId":"0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee","seq":%d,"agent":"agent:product_a",`+
+		`"changeId":"0193a1b3-0000-7000-8000-000000000001","op":"UPDATE","store":{"kind":"POSTGRES","verb":"UPDATE"},"resource":"public.a<b&c>","rows":1,"cascadedRows":0}}`, seq, seq)
 }
 
 // feedBatch is a feed batch of the given events' JSON forms.
@@ -202,8 +202,8 @@ func feedBatch(events ...string) json.RawMessage {
 // noticeEvent is an approval.deliver notice with no link.
 const noticeEvent = `{"specversion":"1.0","id":"0193a1b4-0000-7000-8000-000000000001",` +
 	`"source":"urn:uuid:0193a0f2-5b7e-7c41-9d2a-6e1f00c0ffee","type":"dev.basaltdb.approval.requested",` +
-	`"time":"2026-11-19T06:03:02Z","subject":"product_a","datacontenttype":"application/json",` +
-	`"data":{"kind":"APPROVAL_REQUESTED","agent":"product_a","approvalId":"0193a1b3-1111-7000-8000-000000000001",` +
+	`"time":"2026-11-19T06:03:02Z","subject":"agent:product_a","datacontenttype":"application/json",` +
+	`"data":{"kind":"APPROVAL_REQUESTED","agent":"agent:product_a","approvalId":"0193a1b3-1111-7000-8000-000000000001",` +
 	`"headline":"Update 27 rows in public·leads","expiresAt":"2099-01-01T00:00:00Z",` +
 	`"instruction":"Ask the agent for the link to review the held write and approve it with your passkey."}}`
 

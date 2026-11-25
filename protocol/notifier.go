@@ -16,7 +16,7 @@ const MaxFeedEvents = 100
 // in ascending seq. Events is the CloudEvents JSON batch, kept as bytes so the
 // events reach the plugin as the engine built them, on every transport.
 type FeedObserveRequest struct {
-	Agent  string          `json:"agent"`
+	Agent  string          `json:"agent"` // agent:<name> (CONTRACT.md, Stores, Agent names)
 	Events json.RawMessage `json:"events"`
 }
 

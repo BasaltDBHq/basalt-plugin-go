@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- The notifier messages follow the engine's store-neutral `feed/1` and `deliver/1`, amended in place before the engine's first release. `FeedBatch.Agent`, `FeedEvent.Agent`, `Notice.Agent` and every event's `Subject` are `agent:<name>`. `WriteApplied.Table` is now `WriteApplied.Resource` (the store's name for what changed, `schema.table` in Postgres), and `WriteApplied`, `WriteRefused` and `WriteHeld` gain `Store` (`Kind`, such as `StorePostgres`, and `Verb`, the store's own command). The samples under `testdata/` and `plugintool/samples/` are the engine's new ones.
+
 ### Added
 
 - `basalt-plugin`, the author's command, and its package `plugintool`: `keygen` makes a signing key, `manifest` writes the manifest's `files` hashes from the folder, `sign` signs the folder, and `check` runs the folder's program as the engine would and sends it the contract's samples, on all three transports. They need no engine, no installed copy and no trusted key. They replace `basalt plugin keygen` and `basalt plugin sign`, which leave the `basalt` binary.

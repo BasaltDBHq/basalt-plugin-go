@@ -1,16 +1,16 @@
 {
-  "agent": "product_a",
+  "agent": "agent:product_a",
   "event": {
     "specversion": "1.0",
     "id": "00000000-0000-7000-8000-000000000005",
     "source": "urn:uuid:00000000-0000-0000-0000-000000000000",
     "type": "dev.basaltdb.approval.requested",
     "time": "2026-01-01T00:00:01Z",
-    "subject": "product_a",
+    "subject": "agent:product_a",
     "datacontenttype": "application/json",
     "data": {
       "kind": "APPROVAL_REQUESTED",
-      "agent": "product_a",
+      "agent": "agent:product_a",
       "approvalId": "00000000-0000-7000-8000-000000000003",
       "headline": "Delete 1 row in basalt_check·sample",
       "expiresAt": "2026-01-02T00:00:01Z",
